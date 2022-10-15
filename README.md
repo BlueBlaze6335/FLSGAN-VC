@@ -29,8 +29,8 @@ This repository contains the imorovements incorporated into MaskCycleGAN-VC to c
 
 ## Datasets
 
-* <a href="https://drive.google.com/drive/folders/1c3Zfmd1oqJtqZ-zMq1PQg_vl9el0CX3B?usp=sharing"> CMU Arctic </a>
-* <a href="https://drive.google.com/drive/folders/1c3Zfmd1oqJtqZ-zMq1PQg_vl9el0CX3B?usp=sharing"> VCC2018 Non-Parallel Dataset </a>
+* <a href="http://festvox.org/cmu_arctic/"> CMU Arctic </a>
+* <a href="https://datashare.ed.ac.uk/handle/10283/3061"> VCC2018 Non-Parallel Dataset </a>
 
 ## Generated Samples
 
