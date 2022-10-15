@@ -35,10 +35,10 @@ This repository contains the imorovements incorporated into MaskCycleGAN-VC to c
 ## Generated Samples
 
 ### CMU Arctic
-* <a href="https://drive.google.com/drive/folders/1K75C56H3XUPkq6iKhjMA3zJ3x3XVNwAs?usp=sharing"> Female to Female </a>
-* <a href="https://drive.google.com/drive/folders/143HMhfrHKfkLWlaB_ArK-7LVbZFuMfEq?usp=sharing"> Female to Male </a>
-* <a href="https://drive.google.com/drive/folders/17NTQkzLfHHD--WYCyimIkS1OIV_SO4Bg?usp=sharing"> Male to Female </a>
-* <a href="https://drive.google.com/drive/folders/1fbSGzuBaGZ4FarDtsp9gSSDBhmT9dNV6?usp=sharing"> Male to Male </a>
+* <a href="https://drive.google.com/drive/folders/1Xdw2mdlt24JlBw_rzkQzkNd3eCnhH3-x?usp=sharing"> Female to Female </a>
+* <a href="https://drive.google.com/drive/folders/1l1GCDw-FeG2mRzau1YMP2-DV_TewvT07?usp=sharing"> Female to Male </a>
+* <a href="https://drive.google.com/drive/folders/1C_0OyNO38UjAkkShUWfPpJ8uYjD7Vcix?usp=sharing"> Male to Female </a>
+* <a href="https://drive.google.com/drive/folders/186cQlhP6KVU9q_SlFaVOQs2Jht-vyb6h?usp=sharing"> Male to Male </a>
 
 ### VCC2018
 * <a href="https://drive.google.com/drive/folders/11Nj_iYli3s3CEUTnCFIYAcHz-wR30zzG?usp=sharing"> Female to Female </a>
