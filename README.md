@@ -41,7 +41,7 @@ This repository contains the imorovements incorporated into MaskCycleGAN-VC to c
 * <a href="https://drive.google.com/drive/folders/186cQlhP6KVU9q_SlFaVOQs2Jht-vyb6h?usp=sharing"> Male to Male </a>
 
 ### VCC2018
-* <a href="https://drive.google.com/drive/folders/11Nj_iYli3s3CEUTnCFIYAcHz-wR30zzG?usp=sharing"> Female to Female </a>
-* <a href="https://drive.google.com/drive/folders/1g22rLx7TlAdFIrwhU6J05uOO3oOZHdYC?usp=sharing"> Female to Male </a>
-* <a href="https://drive.google.com/drive/folders/1Sq37vAinkHE1ICg5QXvp7hz2FEQ7-jEs?usp=sharing"> Male to Female </a>
-* <a href="https://drive.google.com/drive/folders/1U2cIxW9cD6wUg_AYG4HUNsDIVFatX2ws?usp=sharing"> Male to Male </a>
+* <a href="https://drive.google.com/drive/folders/1wpVLpLpYTULakPapYeEKKML-eXGzE4z9?usp=sharing"> Female to Female </a>
+* <a href="https://drive.google.com/drive/folders/1XrX8M2plV48sZXf9pHfhzfnBx_KmbPOK?usp=sharing"> Female to Male </a>
+* <a href="https://drive.google.com/drive/folders/1MwMPXWiIKIl8L_JTqmc3q0O8avgIaONy?usp=sharing"> Male to Female </a>
+* <a href="https://drive.google.com/drive/folders/16UoKK2kqA09_ViVysz3vaEHVWlNmF1AT?usp=sharing"> Male to Male </a>
