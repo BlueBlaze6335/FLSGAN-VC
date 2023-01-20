@@ -11,10 +11,25 @@ from tensorflow.python.ops import standard_ops
 from tensorflow.python.eager import context
 import tensorflow_addons as tfa
 
+# l2 normalization
 def l2normalize(v, eps=1e-12):
     return v / (tf.norm(v) + eps)
 
+# Extract function: splitting spectrograms
+def extract_image(im):
+  im1 = Cropping2D(((0,0), (0, 2*(im.shape[2]//3))))(im)
+  im2 = Cropping2D(((0,0), (im.shape[2]//3,im.shape[2]//3)))(im)
+  im3 = Cropping2D(((0,0), (2*(im.shape[2]//3), 0)))(im)
+  return im1,im2,im3
 
+# Assemble function: concatenating spectrograms
+def assemble_image(lsim):
+  im1,im2,im3 = lsim
+  imh = Concatenate(2)([im1,im2,im3])
+  return imh
+
+
+# Conv2D with Spectral Normalization
 class ConvSN2D(tf.keras.layers.Conv2D):
 
     def __init__(self, filters, kernel_size, power_iterations=1, **kwargs):
@@ -69,7 +84,7 @@ class ConvSN2D(tf.keras.layers.Conv2D):
 
         return outputs
 
-
+# Cov2DTranspose with Spectral Normalization
 class ConvSN2DTranspose(tf.keras.layers.Conv2DTranspose):
 
     def __init__(self, filters, kernel_size, power_iterations=1, **kwargs):
@@ -168,7 +183,7 @@ class ConvSN2DTranspose(tf.keras.layers.Conv2DTranspose):
             return self.activation(outputs)
         return outputs
 
-
+# Dense Network with Spectral Normalization
 class DenseSN(Dense):
     def build(self, input_shape):
         super(DenseSN, self).build(input_shape)
@@ -217,7 +232,7 @@ class DenseSN(Dense):
 
 init = tf.keras.initializers.he_uniform()
 
-
+# Block for Siamese Network and Discriminator
 def conv2d(layer_input, filters, kernel_size=4, strides=2, padding='same', leaky=True, bnorm=True, sn=True):
     if leaky:
         Activ = LeakyReLU(alpha=0.2)
@@ -234,7 +249,7 @@ def conv2d(layer_input, filters, kernel_size=4, strides=2, padding='same', leaky
     d = Activ(d)
     return d
 
-
+# Deconvolution Block for Siamese Network and Discriminator
 def deconv2d(layer_input, layer_res, filters, kernel_size=4, conc=True, scalev=False, bnorm=True, up=True, padding='same', strides=2):
     if up:
         u = UpSampling2D((1, 2))(layer_input)
@@ -250,36 +265,13 @@ def deconv2d(layer_input, layer_res, filters, kernel_size=4, conc=True, scalev=F
         u = Concatenate()([u, layer_res])
     return u
 
-
-# def downsample(filters, size, apply_batchnorm=True, padding=False, stride=2, pool=False):
-#     initializer = tf.random_normal_initializer(0., 0.02)
-#     if padding:
-#         result = tf.keras.Sequential()
-#         result.add(
-#             tf.keras.layers.Conv2D(filters, size, strides=stride, padding="valid",
-#                                    kernel_initializer=initializer, use_bias=False))
-#     else:
-#         result = tf.keras.Sequential()
-#         result.add(
-#             tf.keras.layers.Conv2D(filters, size, strides=stride, padding="same",
-#                                    kernel_initializer=initializer, use_bias=False))
-#     if pool:
-#         result.add(tf.keras.layers.AveragePooling2D(
-#             pool_size=(2, 2), padding="valid"))
-#
-#     if apply_batchnorm:
-#         result.add(tf.keras.layers.BatchNormalization())
-#
-#     result.add(tf.keras.layers.LeakyReLU())
-#
-#     return result
-
+# Downsampling Block for Generator
 def downsample(filters, size, apply_batchnorm=True, padding=False, stride=2, pool=False):
     initializer = tf.random_normal_initializer(0., 0.02)
     if padding:
         result = tf.keras.Sequential()
         result.add(
-            tf.keras.layers.Conv2D(filters, size, strides=stride, padding="valid",
+            ConvSN2D(filters, size, strides=stride, padding="valid",
                                    kernel_initializer=initializer, use_bias=False))
     else:
         result = tf.keras.Sequential()
@@ -297,48 +289,7 @@ def downsample(filters, size, apply_batchnorm=True, padding=False, stride=2, poo
 
     return result
 
-# def downsample(filters, size, apply_batchnorm=True, padding=False, stride=2, pool=False, rate=(1, 1)):
-#     initializer = tf.random_normal_initializer(0., 0.02)
-#     if padding:
-#         result = tf.keras.Sequential()
-#         result.add(
-#             tf.keras.layers.Conv2D(filters, size, strides=stride, padding="valid", dilation_rate=rate,
-#                                    kernel_initializer=initializer, use_bias=False))
-#     else:
-#         result = tf.keras.Sequential()
-#         result.add(
-#             tf.keras.layers.Conv2D(filters, size, strides=stride, padding="same",
-#                                    kernel_initializer=initializer, use_bias=False))
-#     if pool:
-#         result.add(tf.keras.layers.AveragePooling2D(
-#             pool_size=(1, 1), padding="valid"))
-#
-#     if apply_batchnorm:
-#         result.add(tf.keras.layers.BatchNormalization())
-#
-#     result.add(tf.keras.layers.LeakyReLU())
-#
-#     return result
-
-# def upsample(filters, size, apply_dropout=False):
-#   initializer = tf.random_normal_initializer(0., 0.02)
-#
-#   result = tf.keras.Sequential()
-#   result.add(
-#     tf.keras.layers.Conv2DTranspose(filters, size, strides=[2,2],
-#                                     padding='same',
-#                                     kernel_initializer=initializer,
-#                                     use_bias=False))
-#
-#   result.add(tf.keras.layers.BatchNormalization())
-#
-#   if apply_dropout:
-#       result.add(tf.keras.layers.Dropout(0.5))
-#
-#   result.add(tf.keras.layers.ReLU())
-#
-#   return result
-
+# Upsampling Block for Generator
 def upsample(filters, size, strides=[2, 2], apply_dropout=False, pool=False):
     initializer = tf.random_normal_initializer(0., 0.02)
 
@@ -362,34 +313,11 @@ def upsample(filters, size, strides=[2, 2], apply_dropout=False, pool=False):
 
     return result
 
-# def upsample(filters, size, strides=[2, 2], apply_dropout=False, pool=False, rate=(1, 1)):
-#     initializer = tf.random_normal_initializer(0., 0.02)
-#
-#     result = tf.keras.Sequential()
-#     result.add(
-#         tf.keras.layers.Conv2DTranspose(filters, size, strides=strides,
-#                                         padding='same',
-#                                         dilation_rate=rate,
-#                                         kernel_initializer=initializer,
-#                                         use_bias=False))
-#
-#     result.add(tf.keras.layers.BatchNormalization())
-#
-#     if apply_dropout:
-#         result.add(tf.keras.layers.Dropout(0.5))
-#
-#     result.add(tf.keras.layers.LeakyReLU())
-#     if pool:
-#         result.add(tf.keras.layers.AveragePooling2D(
-#             pool_size=(1, 1), padding="valid"))
-#
-#     return result
-
 
 def hw_flatten(x):
     return tf.reshape(x, shape=[x.shape[0], -1, x.shape[-1]])
 
-#Attention Layer
+# Attention Layer
 def attention(inp):
   tf.print(inp.shape)
   k=Conv2D(filters=1, kernel_size=1,strides=1, kernel_initializer='glorot_uniform')(inp)
@@ -411,87 +339,35 @@ def attention(inp):
   return x
 
 
-# Extract function: splitting spectrograms
-def extract_image(im):
-  im1 = Cropping2D(((0,0), (0, 2*(im.shape[2]//3))))(im)
-  im2 = Cropping2D(((0,0), (im.shape[2]//3,im.shape[2]//3)))(im)
-  im3 = Cropping2D(((0,0), (2*(im.shape[2]//3), 0)))(im)
-  return im1,im2,im3
-
-# Assemble function: concatenating spectrograms
-def assemble_image(lsim):
-  im1,im2,im3 = lsim
-  imh = Concatenate(2)([im1,im2,im3])
-  return imh
 
 
 # -------------------------------------------------------------------------------------------------------------------------------------
 # Networks Architecture
 
-# def Generator(input_shape):
-#     h, w, c = input_shape
-#     inputs = Input(shape=input_shape)
-#
-#     down_stack = [
-#         downsample(4, [5, 5], padding=True, stride=2, rate=(2, 2)),  # (batch_size, 1, 24, 64)
-#         downsample(16, [9, 9], stride=[2, 2], rate=(2, 2)),  # (batch_size, 1, 12, 128)
-#         downsample(64, [9, 9], stride=[2, 2], rate=(2, 2)),  # (batch_size, 1, 6, 256)
-#         downsample(256, [7, 7], stride=[2, 2], rate=(2, 2)),  # (batch_size, 1, 3, 512)
-#     ]
-#
-#     up_stack = [
-#         upsample(128, [5, 5], strides=[1,1]),  # (batch_size, 1, 3, 512)
-#         upsample(64, [7, 7], strides=[2,5], ),  # (batch_size, 4, 6, 256)
-#         upsample(16, [9, 9],strides=[2,2] ),  # (batch_size, 8, 12, 1024)
-#         upsample(4, [9, 12], strides=[4,2]),
-#     ]
-#
-#     initializer = tf.random_normal_initializer(0., 0.02)
-#     last = tf.keras.layers.Conv2DTranspose(1, (1, 1),
-#                                            strides=(1, 1),
-#                                            padding='valid',
-#                                            kernel_initializer=initializer,
-#                                            activation='tanh')  # (batch_size, 256, 256, 3)
-#     # 1, kernel_size=(h,1), strides=(1,1), kernel_initializer=init, padding='valid', activation='tanh'
-#     x = inputs
-#
-#     # Downsampling through the model
-#     skips = []
-#     #x = tf.keras.layers.ZeroPadding2D((0, 1))(x)  # (26,1)
-#     for down in down_stack:
-#         x = down(x)
-#         skips.append(x)
-#     skips = reversed(skips[:-1])
-#     x = attention(x)
-#     # Upsampling and establishing the skip connections
-#     for up in up_stack:
-#         x = up(x)
-#         # x = tf.keras.layers.Concatenate()([x, skip])
-#
-#     x = last(x)  # tf.keras.activations.tanh(x)
-#     model = tf.keras.Model(inputs=inputs, outputs=x, name="Generator")
-#     model.summary()
-#     # last_down=skips[0]
-#     # feature=Flatten()(last_down)
-#     # tf.print(feature)
-#     # last_down = tf.reduce_mean(last_down)
-#     return model
-
 def Generator(input_shape):
+
+    # Generator :
+    # Downsampling -> Attention -> Upsampling
+    # U-Net shaped Architecture without skip connections
+
     h, w, c = input_shape
-    inputs = Input(shape=input_shape)
+    inputs = Input(shape=input_shape)  # (bs,192,24,1)
+
+    # Downsampling
 
     down_stack = [
-        downsample(4, [5, 5], padding=True, stride=1),  # (batch_size, 1, 24, 64)
-        downsample(16, [9, 9], stride=[2, 2]),  # (batch_size, 1, 12, 128)
-        downsample(64, [9, 9], stride=[2, 2]),  # (batch_size, 1, 6, 256)
-        downsample(256, [7, 7], stride=[2, 2]),  # (batch_size, 1, 3, 512)
+        downsample(4, [5, 5], padding=True, stride=1),  # (bs,192,26,1) - (bs,188,22,4)
+        downsample(16, [9, 9], stride=[2, 2]),  # (bs,188,22,4) - (bs,94,11,16)
+        downsample(64, [9, 9], stride=[2, 2]),  # (bs,94,11,16) - (bs,47,6,64)
+        downsample(256, [7, 7], stride=[2, 2]),  # (bs,47,6,64) - (bs,24,3,256)
     ]
 
+    # Upsampling
+
     up_stack = [
-        upsample(64, [5, 5], apply_dropout=True),  # (batch_size, 1, 3, 512)
-        upsample(16, [7, 7], apply_dropout=True),  # (batch_size, 4, 6, 256)
-        upsample(4, [9, 9]),  # (batch_size, 8, 12, 1024)
+        upsample(64, [5, 5], apply_dropout=True),  # (bs,24,3,256) - (bs,48,6,64)
+        upsample(16, [7, 7], apply_dropout=True),  # (bs,48,6,64) - (bs,96,12,16)
+        upsample(4, [9, 9]),  # (bs,96,12,16) - (bs,192,24,4)
     ]
 
     initializer = tf.random_normal_initializer(0., 0.02)
@@ -499,131 +375,53 @@ def Generator(input_shape):
                                            strides=1,
                                            padding='valid',
                                            kernel_initializer=initializer,
-                                           activation='tanh')  # (batch_size, 256, 256, 3)
-    # 1, kernel_size=(h,1), strides=(1,1), kernel_initializer=init, padding='valid', activation='tanh'
+                                           activation='tanh')  # (bs,192,24,4) - (bs,192,24,1)
     x = inputs
 
     # Downsampling through the model
+
     skips = []
-    x = tf.keras.layers.ZeroPadding2D((0, 1))(x)  # (26,1)
+    x = tf.keras.layers.ZeroPadding2D((0, 1))(x)
     for down in down_stack:
         x = down(x)
         skips.append(x)
     skips = reversed(skips[:-1])
+
+    # Attention layer
+
     x = attention(x)
-    # Upsampling and establishing the skip connections
+
+    # Upsampling
+
     for up, skip in zip(up_stack, skips):
         x = up(x)
-        # x = tf.keras.layers.Concatenate()([x, skip])
 
     x = last(x)
     model = tf.keras.Model(inputs=inputs, outputs=x, name="Generator")
     model.summary()
-    # last_down=skips[0]
-    # feature=Flatten()(last_down)
-    # tf.print(feature)
-    # last_down = tf.reduce_mean(last_down)
     return model
-
-# def Discriminator(inp_shape):
-#   initializer = tf.random_normal_initializer(0., 0.02)
-#
-#   inp = tf.keras.layers.Input(shape=inp_shape, name='input_image')
-#
-#   #x = tf.keras.layers.concatenate([inp, tar])  # (batch_size, 256, 256, channels*2)
-#
-#   down1 = downsample(64, 4, False)(inp)  # (batch_size, 128, 128, 64)
-#   down2 = downsample(128, 4)(down1)  # (batch_size, 64, 64, 128)
-#   down3 = downsample(256, 4)(down2)  # (batch_size, 32, 32, 256)
-#
-#   zero_pad1 = tf.keras.layers.ZeroPadding2D()(down3)  # (batch_size, 34, 34, 256)
-#   conv = tf.keras.layers.Conv2D(256, 4, strides=1,
-#                                 kernel_initializer=initializer,
-#                                 use_bias=False)(zero_pad1)  # (batch_size, 31, 31, 512)
-#
-#   batchnorm1 = tf.keras.layers.BatchNormalization()(conv)
-#
-#   leaky_relu = tf.keras.layers.LeakyReLU()(batchnorm1)
-#
-#   zero_pad2 = tf.keras.layers.ZeroPadding2D()(leaky_relu)  # (batch_size, 33, 33, 512)
-#
-#   last = tf.keras.layers.Conv2D(256, 4, strides=1,
-#                                 kernel_initializer=initializer)(zero_pad2)  # (batch_size, 30, 30, 1)
-#   flatten=Flatten()(last)
-#   dense = Dense(1)(flatten)
-#
-#   model = tf.keras.Model(inputs=inp, outputs=dense , name="Discriminator")
-#   model.summary()
-#   return model
-
-def Discriminator(inp_shape):
-  initializer = tf.random_normal_initializer(0., 0.02)
-
-  inp = tf.keras.layers.Input(shape=inp_shape, name='input_image')
-  tar = tf.keras.layers.Input(shape=inp_shape, name='target_image')
-
-  x = tf.keras.layers.concatenate([inp, tar])  # (batch_size, 256, 256, channels*2)
-
-  down1 = downsample(64, 4, False)(x)  # (batch_size, 128, 128, 64)
-  down2 = downsample(128, 4)(down1)  # (batch_size, 64, 64, 128)
-  down3 = downsample(256, 4)(down2)  # (batch_size, 32, 32, 256)
-
-  zero_pad1 = tf.keras.layers.ZeroPadding2D()(down3)  # (batch_size, 34, 34, 256)
-  conv = tf.keras.layers.Conv2D(512, 4, strides=1,
-                                kernel_initializer=initializer,
-                                use_bias=False)(zero_pad1)  # (batch_size, 31, 31, 512)
-
-  batchnorm1 = tf.keras.layers.BatchNormalization()(conv)
-
-  leaky_relu = tf.keras.layers.LeakyReLU()(batchnorm1)
-
-  zero_pad2 = tf.keras.layers.ZeroPadding2D()(leaky_relu)  # (batch_size, 33, 33, 512)
-
-  last = tf.keras.layers.Conv2D(1, 4, strides=1,
-                                kernel_initializer=initializer)(zero_pad2)  # (batch_size, 30, 30, 1)
-
-  model = tf.keras.Model(inputs=[inp, tar], outputs=last , name="Discriminator")
-  model.summary()
-  return model
-
-# U-NET style architecture
-# def build_siamese(input_shape):
-#   h,w,c = input_shape
-#   inp = Input(shape=input_shape)
-#   g1 = conv2d(inp, 64, kernel_size=(4,4), strides=(2,2), padding='valid', sn=False)
-#   g2 = conv2d(g1, 128, kernel_size=(4,4), strides=(2,2), sn=False)
-#   g3 = conv2d(g2, 256, kernel_size=(4,4), strides=(2,2), sn=False)
-#   #g4 = attention(g3)
-#   g5 = Flatten()(g3)
-#   g5 = Dense(128)(g5)
-#   model=Model(inp,g5,name="Siamese")
-#   model.summary()
-#   return model
 
 def build_siamese(input_shape):
   h,w,c = input_shape
-  inp = Input(shape=input_shape)
-  g1 = conv2d(inp, 64, kernel_size=(4,4), strides=(2,2), padding='valid', sn=False)
-  g2 = conv2d(g1, 128, kernel_size=(4,4), strides=(2,2), sn=False)
-  g3 = conv2d(g2, 128, kernel_size=(4,4), strides=(2,2), sn=False)
-  #g4 = attention(g3)
-  g5 = Flatten()(g3)
-  g5 = Dense(128)(g5)
+  inp = Input(shape=input_shape)  # (bs,192,24,1)
+  g1 = conv2d(inp, 64, kernel_size=(4,4), strides=(2,2), padding='valid', sn=False)  # (bs,192,24,1) - (bs,95,11,64)
+  g2 = conv2d(g1, 128, kernel_size=(4,4), strides=(2,2), sn=False)  # (bs,95,11,64) - (bs,48,6,128)
+  g3 = conv2d(g2, 128, kernel_size=(4,4), strides=(2,2), sn=False)  # (bs,48,6,128) - (bs,24,3,128)
+  g4 = Flatten()(g3)  # (bs,9216)
+  g5 = Dense(128)(g4)  # (bs,128) # latent space information passed using vector of length 128
   model=Model(inp,g5,name="Siamese")
   model.summary()
   return model
 
 def build_critic(input_shape):
   h,w,c = input_shape
-  inp = Input(shape=input_shape)
-  #g0 = tf.keras.layers.ZeroPadding2D((1,0))(inp)
-  g1 = conv2d(inp, 32, kernel_size=(8,8), strides=(2,3), padding='valid', bnorm=False)
-  g2 = conv2d(g1, 64, kernel_size=(6,6), strides=(2,2), bnorm=False)
-  g3 = conv2d(g2, 128, kernel_size=(6,6), strides=(2,2), bnorm=False)
-  g4 = conv2d(g3, 256, kernel_size=(5,5), strides=(1,2), bnorm=False)
-  #g5 = attention(g4)
-  g6=Flatten()(g4)
-  g7 = DenseSN(1, kernel_initializer=init)(g6)
-  model=Model(inp,g7,name="Critic")
+  inp = Input(shape=input_shape)  #(bs,192,72,1)
+  g1 = conv2d(inp, 32, kernel_size=(8,8), strides=(2,3), padding='valid', bnorm=False)  # (bs,192,72,1) - (bs,93,22,32)
+  g2 = conv2d(g1, 64, kernel_size=(6,6), strides=(2,2), bnorm=False)  # (bs,93,22,32) - (bs,47,11,64)
+  g3 = conv2d(g2, 128, kernel_size=(6,6), strides=(2,2), bnorm=False)  # (bs,47,11,64) - (bs,24,6,128)
+  g4 = conv2d(g3, 256, kernel_size=(5,5), strides=(1,2), bnorm=False)  # (bs,24,6,128) - (bs,24,3,256)
+  g5=Flatten()(g4)  # (bs,18432)
+  g6 = DenseSN(1, kernel_initializer=init)(g5)  # (bs,1)
+  model=Model(inp,g6,name="Critic")
   model.summary()
   return model
