@@ -31,3 +31,41 @@ Voice conversion (VC) is the process of matching the target speaker's vocal text
 * <a href="https://drive.google.com/drive/folders/1XrX8M2plV48sZXf9pHfhzfnBx_KmbPOK?usp=sharing"> Female to Male </a>
 * <a href="https://drive.google.com/drive/folders/1MwMPXWiIKIl8L_JTqmc3q0O8avgIaONy?usp=sharing"> Male to Female </a>
 * <a href="https://drive.google.com/drive/folders/16UoKK2kqA09_ViVysz3vaEHVWlNmF1AT?usp=sharing"> Male to Male </a>
+
+## Code
+
+### Prerequisites
+- Linux, macOS or Windows
+- Python 3
+- CPU or NVIDIA GPU + CUDA CuDNN
+
+### Getting Started
+
+### Downloading Datasets
+Please refer to Datasets
+
+### Installation
+
+- Clone this repo:
+```bash
+git clone https://github.com/BlueBlaze6335/FLSGAN-VC.git
+cd FLSGAN-VC
+```
+- Install all the dependencies by
+```bash
+pip install -r requirements.txt
+```
+
+### Run
+- Training
+```bash
+python train.py
+```
+
+- Testing
+```bash
+python inference.py
+```
+
+## Acknowledgments
+Our code is heavily inspired by [MelGAN VC](https://github.com/MuradBozik/audio-style-transfer).
