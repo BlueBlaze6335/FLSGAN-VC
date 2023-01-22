@@ -32,17 +32,20 @@ Voice conversion (VC) is the process of matching the target speaker's vocal text
 * <a href="https://drive.google.com/drive/folders/1MwMPXWiIKIl8L_JTqmc3q0O8avgIaONy?usp=sharing"> Male to Female </a>
 * <a href="https://drive.google.com/drive/folders/16UoKK2kqA09_ViVysz3vaEHVWlNmF1AT?usp=sharing"> Male to Male </a>
 
-## Code
+# Code
 
 ### Prerequisites
 - Linux, macOS or Windows
 - Python 3
 - CPU or NVIDIA GPU + CUDA CuDNN
 
-### Getting Started
+## Getting Started
 
 ### Downloading Datasets
-Please refer to Datasets
+Download and save in "Data" folder
+* <a href="http://festvox.org/cmu_arctic/"> CMU Arctic </a>
+* <a href="https://datashare.ed.ac.uk/handle/10283/3061"> VCC2018 Non-Parallel Dataset </a>
+
 
 ### Installation
 
@@ -54,6 +57,18 @@ cd FLSGAN-VC
 - Install all the dependencies by
 ```bash
 pip install -r requirements.txt
+```
+```
+ipython==8.8.0
+librosa==0.9.1
+matplotlib==3.4.2
+numpy==1.19.5
+SoundFile==0.10.3.post1
+tensorflow==2.6.0
+tensorflow_addons==0.17.0
+torch==1.12.0
+torchaudio==0.12.0
+tqdm==4.42.1
 ```
 
 ### Run
