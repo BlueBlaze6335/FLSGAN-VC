@@ -132,7 +132,7 @@ class Training_helpers():
             print('Loaded networks')
 
 
-        opt_gen = Adam(0.0001, 0.5,0.999)
+        opt_gen = Adam(0.0001, 0.5,0.999)  # we have used Adam as optimiser for both Generator and Discriminator
         opt_disc = Adam(0.00001, 0.5,0.999)
 
         self.gen = gen
