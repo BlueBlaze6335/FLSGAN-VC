@@ -24,16 +24,15 @@ class EasyDict(dict):
 
     def __delattr__(self, name: str) -> None:
         del self[name]
-
-
+        
 def setup_training_args(args):
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--awv_path", type=str, default='/media/nd/disk3/Neel/audio_style_transfer/Data/cmu_us_bdl_arctic/wav',
+    parser.add_argument("--awv_path", type=str, default='/Data/cmu_us_bdl_arctic_train/wav',
                         help="Source spectrograms path")
-    parser.add_argument("--bwv_path", type=str, default='/media/nd/disk3/Neel/audio_style_transfer/Data/cmu_us_clb_arctic/wav',
+    parser.add_argument("--bwv_path", type=str, default='/Data/cmu_us_clb_arctic_train/wav',
                         help="Target spectrograms path")
-    parser.add_argument("--dest_path", type=str, default='/home/nd/Desktop/Results_melgan',
+    parser.add_argument("--dest_path", type=str, default='/Results',
                         help="Destination path to save network weights")
     parser.add_argument("--model_path", type=str, default=None,
                         help="Destination path to previously saved network weights")
@@ -106,11 +105,11 @@ if __name__ == "__main__":
     args = setup_training_args(args)
 
     CH = Common_helpers(args)
-    # MALE1
+    # Source
     awv = CH.audio_array(args.awv_path)  # get waveform array from folder containing wav files
     aspec = CH.tospec(awv)  # get spectrogram array
     adata = CH.splitcut(aspec)  # split spectrogams to fixed length
-    # FEMALE1
+    # Target
     bwv = CH.audio_array(args.bwv_path)
     bspec = CH.tospec(bwv)
     bdata = CH.splitcut(bspec)
@@ -120,10 +119,10 @@ if __name__ == "__main__":
     def proc(x):
         return tf.image.random_crop(x, size=[args.hop, 3 * args.shape, 1])
 
-
+    # Source 
     dsa = tf.data.Dataset.from_tensor_slices(adata).repeat(50).map(
         proc, num_parallel_calls=tf.data.experimental.AUTOTUNE).shuffle(10000).batch(args.batch_size,
-                                                                                     drop_remainder=True)
+    # Target                                                                                 drop_remainder=True)
     dsb = tf.data.Dataset.from_tensor_slices(bdata).repeat(50).map(
         proc, num_parallel_calls=tf.data.experimental.AUTOTUNE).shuffle(10000).batch(args.batch_size,
                                                                                      drop_remainder=True)
