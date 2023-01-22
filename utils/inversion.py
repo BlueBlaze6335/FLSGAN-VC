@@ -16,6 +16,7 @@ class Inversion_helpers():
         melobj = MelScale(n_mels=self.args.hop, sample_rate=self.args.sr, f_min=0. , n_stft=577)
         self.melfunc = melobj.forward
 
+    # Conversion of waveform to Mel spectrogram    
     def melspecfunc(self, waveform):
       specgram = self.specfunc(waveform)
       #print(specgram.shape,"spec shape")
@@ -27,7 +28,8 @@ class Inversion_helpers():
 
     def spectral_convergence(self, input, target):
         return 20 * ((input - target).norm().log10() - target.norm().log10())
-
+    
+    # Griffin-Lim Algorithm to convert Mel spectrogram to wav
     def GRAD(self, spec, transform_fn, samples=None, init_x0=None, maxiter=1000, tol=1e-6, verbose=1, evaiter=10, lr=0.003):
 
         spec = torch.Tensor(spec)
@@ -68,12 +70,13 @@ class Inversion_helpers():
 
         return x.detach().view(-1).cpu()
 
-    def normalize(self, S):
+    def normalize(self, S):  # normalization of spectrogram
       return np.clip((((S - self.args.min_level_db) / -self.args.min_level_db)*2.)-1., -1, 1)
 
-    def denormalize(self, S):
+    def denormalize(self, S):  # denormization
       return (((np.clip(S, -1, 1)+1.)/2.) * -self.args.min_level_db) + self.args.min_level_db
 
+    # Preparing spectrograms (log scaled)
     def prep(self, wv):
       #print(wv.shape,"wv shape")
       trc=torch.Tensor(wv).view(1,-1)
@@ -81,7 +84,8 @@ class Inversion_helpers():
       S = np.array(torch.squeeze(self.melspecfunc(trc)).detach().cpu())
       S = librosa.power_to_db(S)-self.args.ref_level_db
       return self.normalize(S)
-
+    
+    # Depreping spectrogram to wav
     def deprep(self,S):
       S = self.denormalize(S)+self.args.ref_level_db
       S = librosa.db_to_power(S)
