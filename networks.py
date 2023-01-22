@@ -266,12 +266,13 @@ def deconv2d(layer_input, layer_res, filters, kernel_size=4, conc=True, scalev=F
     return u
 
 # Downsampling Block for Generator
-def downsample(filters, size, apply_batchnorm=True, padding=False, stride=2, pool=False):
+def downsample(filters, size, apply_batchnorm=True, padding=False,
+rate=(1,1), stride=2, pool=False):
     initializer = tf.random_normal_initializer(0., 0.02)
     if padding:
         result = tf.keras.Sequential()
         result.add(
-            ConvSN2D(filters, size, strides=stride, padding="valid",
+            tf.keras.layers.Conv2D(filters, size, strides=stride, padding="valid",dilation_rate=rate,
                                    kernel_initializer=initializer, use_bias=False))
     else:
         result = tf.keras.Sequential()
@@ -288,6 +289,7 @@ def downsample(filters, size, apply_batchnorm=True, padding=False, stride=2, poo
     result.add(tf.keras.layers.LeakyReLU())
 
     return result
+
 
 # Upsampling Block for Generator
 def upsample(filters, size, strides=[2, 2], apply_dropout=False, pool=False):
