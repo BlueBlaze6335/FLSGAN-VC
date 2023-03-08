@@ -24,7 +24,7 @@ Voice conversion (VC) is the process of matching the target speaker's vocal text
 * <a href="https://drive.google.com/drive/folders/1MwMPXWiIKIl8L_JTqmc3q0O8avgIaONy?usp=sharing"> Male to Female </a>
 * <a href="https://drive.google.com/drive/folders/16UoKK2kqA09_ViVysz3vaEHVWlNmF1AT?usp=sharing"> Male to Male </a>
 
-### More samples
+### More Generated samples of CMU Arctic and VCC2018 Dataset
 
 <a href="https://drive.google.com/drive/folders/1pFLXpHJum-ajAkZEEhADRpTAsttgVS8K?usp=sharing">Samples of CMU Arctic and VCC 2018</a>
 
