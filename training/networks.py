@@ -407,9 +407,9 @@ def build_siamese(input_shape):
   g1 = conv2d(inp, 64, kernel_size=(4,4), strides=(2,2), padding='valid', sn=False)  # (bs,192,24,1) - (bs,95,11,64)
   g2 = conv2d(g1, 128, kernel_size=(4,4), strides=(2,2), sn=False)  # (bs,95,11,64) - (bs,48,6,128)
   g3 = conv2d(g2, 128, kernel_size=(4,4), strides=(2,2), sn=False)  # (bs,48,6,128) - (bs,24,3,128)
-  g4 = Flatten()(g3)  # (bs,9216)
-  g5 = Dense(128)(g4)  # (bs,128) # latent space information passed using vector of length 128
-  model=Model(inp,g5,name="Siamese")
+  g4 = Flatten(128)(g3)  # (bs,9216) - (bs,128) # latent space information passed using vector of length 128
+  
+  model=Model(inp,g4,name="Siamese")
   model.summary()
   return model
 
