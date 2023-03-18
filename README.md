@@ -1,4 +1,13 @@
-# FLSGAN-VC
+
+# VOICE CONVERSION USING FEATURE SPECIFIC LOSS FUNCTION BASED SELF-ATTENTIVE GENERATIVE ADVERSARIAL NETWORK FLSGAN-VC
+
+<p align="center">
+    <strong>Authors</strong>
+  <p align="center">
+     <a href="https://scholar.google.com/citations?user=37kX7hYAAAAJ&hl=en" >Sandipan Dhar</a> • <a href="https://scholar.google.com/citations?hl=en&user=Ow9aqPcAAAAJ">Padmanabha Banerjee</a> • <a href="https://scholar.google.com/citations?user=69EVBBsAAAAJ&hl=en&oi=ao">Nanda Dulal Jana</a> • <a href="https://scholar.google.com/citations?user=L8XYpAwAAAAJ&hl=en&oi=ao">Swagatam Das</a>
+    
+  </p>
+</p>
 
 ### Dataset links and speech samples are provided below:
 
